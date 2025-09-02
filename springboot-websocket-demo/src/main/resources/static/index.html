@@ -1,0 +1,27 @@
+<input id="name" placeholder="Enter your name..." />
+<button onclick="sendMessage()">Send</button>
+<pre id="response"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script>
+    let stompClient = null;
+
+    function connect() {
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function(frame) {
+            document.getElementById("response").textContent += "✅ connected\n";
+            stompClient.subscribe("/topic/greetings", function(msg) {
+                document.getElementById("response").textContent += msg.body + "\n";
+            })
+        })
+    }
+
+    function sendMessage() {
+        const name = document.getElementById("name").value;
+        stompClient.send("/app/hello", {}, JSON.stringify({name: name}))
+    }
+
+    connect();
+</script>
